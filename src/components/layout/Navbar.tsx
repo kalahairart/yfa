@@ -19,6 +19,7 @@ import {
 import { ThemeSettings } from '../../types/property';
 
 import { AdminUser } from '../../types/auth';
+import { getSupabaseConfig } from '../../utils/supabase';
 
 interface NavbarProps {
   settings: ThemeSettings;
@@ -30,6 +31,7 @@ interface NavbarProps {
   onSelectProperty?: (id: string) => void;
   currentUser?: AdminUser | null;
   onLogout?: () => void;
+  onOpenDeveloperCenter?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,7 +43,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSearchChange,
   currentUser,
   onLogout,
+  onOpenDeveloperCenter,
 }) => {
+  const isSupabaseConfigured = getSupabaseConfig().isConfigured;
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -115,6 +119,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Right Controls */}
       <div className="flex items-center gap-1.5 sm:gap-2">
+        {/* Supabase Connection Status Pill */}
+        {onOpenDeveloperCenter && (
+          <button
+            onClick={onOpenDeveloperCenter}
+            title="Klik untuk membuka Tes Koneksi Supabase & Database Health"
+            className={`hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors cursor-pointer ${
+              isSupabaseConfigured
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100'
+                : 'bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 hover:bg-amber-100'
+            }`}
+          >
+            <span className={`w-2 h-2 rounded-full ${isSupabaseConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+            <span>{isSupabaseConfigured ? 'Supabase Live' : 'Demo Mode'}</span>
+          </button>
+        )}
+
         {/* Language Switcher */}
         <div className="relative">
           <button
