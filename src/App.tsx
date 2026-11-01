@@ -33,6 +33,12 @@ import { OwnerTracker } from './components/admin/OwnerTracker';
 import { DeveloperCenter } from './components/admin/DeveloperCenter';
 import { PropertyChat } from './components/messages/PropertyChat';
 import { LoginModal } from './components/auth/LoginModal';
+import { 
+  getSupabaseConfig, 
+  getSupabaseClient, 
+  signOutFromSupabase, 
+  fetchVillasFromSupabase 
+} from './utils/supabase';
 
 import { 
   Building2, 
@@ -76,13 +82,13 @@ const DEFAULT_DEMO_ADMIN: AdminUser = {
 };
 
 export default function App() {
-  // Authentication State (persisted in localStorage)
+  // Authentication State (persisted in localStorage or Supabase session)
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => {
     try {
       const saved = localStorage.getItem('lahomes_auth_admin');
-      return saved ? JSON.parse(saved) : DEFAULT_DEMO_ADMIN;
+      return saved ? JSON.parse(saved) : null;
     } catch {
-      return DEFAULT_DEMO_ADMIN;
+      return null;
     }
   });
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -94,6 +100,43 @@ export default function App() {
   const [villas, setVillas] = useState<Villa[]>(INITIAL_VILLAS);
   const [owners, setOwners] = useState<VillaOwner[]>(INITIAL_OWNERS);
   const [inquiries, setInquiries] = useState<VillaInquiry[]>(INITIAL_INQUIRIES);
+
+  // Check Supabase session & fetch remote villas on mount
+  useEffect(() => {
+    const initAuthAndData = async () => {
+      const client = getSupabaseClient();
+      if (client) {
+        try {
+          const { data } = await client.auth.getSession();
+          if (data?.session?.user) {
+            const u = data.session.user;
+            const adminUser: AdminUser = {
+              id: u.id,
+              name: u.user_metadata?.full_name || u.email?.split('@')[0] || 'Agen Supabase',
+              email: u.email || '',
+              role: (u.user_metadata?.role as any) || 'principal_broker',
+              avatar: '/src/assets/images/avatar_agent_male_1792833743569.jpg',
+              token: data.session.access_token,
+              loginTime: 'Sesi Aktif',
+            };
+            setCurrentUser(adminUser);
+          }
+        } catch (err) {
+          console.error('Error fetching Supabase session:', err);
+        }
+
+        try {
+          const remoteVillas = await fetchVillasFromSupabase();
+          if (remoteVillas && remoteVillas.length > 0) {
+            setVillas(remoteVillas);
+          }
+        } catch (err) {
+          console.error('Error fetching villas from Supabase:', err);
+        }
+      }
+    };
+    initAuthAndData();
+  }, []);
 
   // Navigation & Selection States
   const [activeAdminTab, setActiveAdminTab] = useState<ActiveTab>('dashboard');
@@ -122,15 +165,10 @@ export default function App() {
   };
 
   // Auth Handlers
-  const handleLogin = (credentials: LoginCredentials): boolean => {
-    // Validate password (demo password is 'admin123' or any non-empty password)
-    if (credentials.password.length < 4) {
-      return false;
-    }
-
-    const authenticatedUser: AdminUser = {
-      id: `usr-${Date.now().toString().slice(-4)}`,
-      name: 'Candra Rusman',
+  const handleLogin = (credentials: LoginCredentials, userObj?: AdminUser): boolean => {
+    const authenticatedUser: AdminUser = userObj || {
+      id: `usr-demo-${Date.now().toString().slice(-4)}`,
+      name: credentials.email ? credentials.email.split('@')[0] : 'Candra Rusman',
       email: credentials.email || 'candra.rusman@lahomes.realestate',
       role: 'principal_broker',
       avatar: '/src/assets/images/avatar_agent_male_1792833743569.jpg',
@@ -148,7 +186,8 @@ export default function App() {
     return true;
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOutFromSupabase();
     setCurrentUser(null);
     try {
       localStorage.removeItem('lahomes_auth_admin');
@@ -423,6 +462,7 @@ export default function App() {
                 onSearchChange={setAdminSearch}
                 currentUser={currentUser}
                 onLogout={handleLogout}
+                onOpenDeveloperCenter={() => setActiveAdminTab('developer')}
               />
 
               {/* Dashboard Viewport Content */}
@@ -544,6 +584,10 @@ export default function App() {
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLogin}
         settings={settings}
+        onOpenDeveloperCenter={() => {
+          setViewMode('admin');
+          setActiveAdminTab('developer');
+        }}
       />
 
       {/* Theme Settings Customizer Drawer */}
