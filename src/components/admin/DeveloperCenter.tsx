@@ -22,8 +22,10 @@ import {
   FileCode
 } from 'lucide-react';
 
+import { SupabaseConnectionTester } from './SupabaseConnectionTester';
+
 export const DeveloperCenter: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'sql' | 'folder' | 'vercel' | 'roadmap'>('sql');
+  const [activeTab, setActiveTab] = useState<'tester' | 'sql' | 'folder' | 'vercel' | 'roadmap'>('tester');
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedEnv, setCopiedEnv] = useState(false);
   const [copiedVarName, setCopiedVarName] = useState<string | null>(null);
@@ -413,6 +415,18 @@ NEXT_PUBLIC_SITE_URL=https://lahomes-villa.vercel.app`;
         {/* Tab switcher */}
         <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold overflow-x-auto">
           <button
+            onClick={() => setActiveTab('tester')}
+            className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+              activeTab === 'tester'
+                ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-xs'
+                : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            <span>Tes Koneksi Supabase</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('sql')}
             className={`px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
               activeTab === 'sql'
@@ -461,6 +475,14 @@ NEXT_PUBLIC_SITE_URL=https://lahomes-villa.vercel.app`;
           </button>
         </div>
       </div>
+
+      {/* Tab 0: Supabase Live Connection Tester */}
+      {activeTab === 'tester' && (
+        <SupabaseConnectionTester 
+          onGoToSqlTab={() => setActiveTab('sql')}
+          onGoToVercelTab={() => setActiveTab('vercel')}
+        />
+      )}
 
       {/* Tab 1: Supabase SQL Script */}
       {activeTab === 'sql' && (
