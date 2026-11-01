@@ -26,7 +26,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
                 <Building2 className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-xl font-black text-white tracking-tight">Lahomes Villa Collection</span>
+                <span className="text-xl font-black text-white tracking-tight">YFA Villa Collection</span>
                 <span className="text-xs text-emerald-400 font-bold block uppercase tracking-wider">Independent Villa Brokerage</span>
               </div>
             </div>
@@ -91,7 +91,7 @@ export const PublicFooter: React.FC<PublicFooterProps> = ({
 
         {/* Bottom copyright */}
         <div className="pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <p>© {new Date().getFullYear()} Lahomes Villa Management. {language === 'id' ? 'Desain & antarmuka dikembangkan untuk Agen Properti Profesional.' : 'Design & interface built for Professional Real Estate Agents.'}</p>
+          <p>© {new Date().getFullYear()} YFA Villa Management. {language === 'id' ? 'Desain & antarmuka dikembangkan untuk Agen Properti Profesional.' : 'Design & interface built for Professional Real Estate Agents.'}</p>
           <div className="flex items-center gap-4">
             <button onClick={onSwitchToAdmin} className="hover:text-slate-300">{t.agentPortal}</button>
             <span>·</span>
