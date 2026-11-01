@@ -1,0 +1,6 @@
+{
+  "name": "Lahomes - Real Estate Admin Dashboard",
+  "description": "Modern responsive real estate and property management admin dashboard template referencing Lahomes by Techzaa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
